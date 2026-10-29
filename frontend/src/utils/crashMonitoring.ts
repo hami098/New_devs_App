@@ -235,7 +235,8 @@ class CrashMonitor {
     // Track clicks
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
-      const action = `Click: ${target.tagName}${target.className ? '.' + target.className.split(' ').join('.') : ''}${target.id ? '#' + target.id : ''}`;
+      const className = target.getAttribute?.('class') || '';
+      const action = `Click: ${target.tagName}${className ? '.' + className.split(' ').join('.') : ''}${target.id ? '#' + target.id : ''}`;
       this.addUserAction(action);
     });
 
