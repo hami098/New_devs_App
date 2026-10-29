@@ -168,6 +168,7 @@ export class StorageHealthChecker {
       try {
         const value = localStorage.getItem(key);
         if (!value) continue;
+        if (!value.startsWith('{') && !value.startsWith('[')) continue;
         
         // Try to parse as JSON
         const parsed = JSON.parse(value);
