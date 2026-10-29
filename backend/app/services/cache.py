@@ -6,7 +6,7 @@ import os
 # Initialize Redis client (typically configured centrally).
 redis_client = redis.Redis.from_url(os.getenv("REDIS_URL", "redis://localhost:6379/0"))
 
-async def get_revenue_summary(property_id: str, tenant_id: str, month: Optional[int] = None, year: Optional[int] = None) -> Dict[str, Any]:
+async def get_revenue_summary(property_id: str, tenant_id: str, month: Optional[int] = None, year: Optional[int] = None) -> Optional[Dict[str, Any]]:
     """
     Fetches revenue summary, utilizing caching to improve performance.
     """
@@ -27,6 +27,9 @@ async def get_revenue_summary(property_id: str, tenant_id: str, month: Optional[
     else:
         result = await calculate_total_revenue(property_id, tenant_id)
     
+    if result is None:
+        return None
+
     # Cache the result for 5 minutes
     await redis_client.setex(cache_key, 300, json.dumps(result))
     
