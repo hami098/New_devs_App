@@ -23,8 +23,11 @@ export const RevenueSummary: React.FC<RevenueSummaryProps> = ({ propertyId = 'pr
     const activeTenant = debugTenant || 'candidate';
 
     useEffect(() => {
+        let stale = false;
         const fetchRevenue = async () => {
             setLoading(true);
+            setError('');
+            setData(null);
             try {
                 // Use SecureAPI to handle authentication automatically
                 // We pass the simulatedTenant option which SecureAPI will attach as a header
@@ -33,16 +36,19 @@ export const RevenueSummary: React.FC<RevenueSummaryProps> = ({ propertyId = 'pr
                     timestamp: Date.now(),
                     month
                 });
-                setData(response);
+                if (!stale) setData(response);
             } catch (err) {
-                setError('Failed to load revenue data');
+                if (!stale) setError('Failed to load revenue data');
                 console.error(err);
             } finally {
-                setLoading(false);
+                if (!stale) setLoading(false);
             }
         };
 
         fetchRevenue();
+        return () => {
+            stale = true;
+        };
     }, [propertyId, month, activeTenant]);
 
     if (loading) {
