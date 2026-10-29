@@ -13,7 +13,11 @@ async def get_dashboard_summary(
     
     tenant_id = getattr(current_user, "tenant_id", "default_tenant") or "default_tenant"
     
-    revenue_data = await get_revenue_summary(property_id, tenant_id)
+    try:
+        revenue_data = await get_revenue_summary(property_id, tenant_id)
+    except Exception as e:
+        print(f"Revenue summary failed for {property_id} (tenant: {tenant_id}): {e}")
+        raise HTTPException(status_code=503, detail="Revenue data is temporarily unavailable")
     
     total_revenue_float = float(revenue_data['total'])
     
