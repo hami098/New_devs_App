@@ -43,6 +43,13 @@ export class TenantIsolationError extends Error {
   }
 }
 
+export class ClientRequestError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ClientRequestError';
+  }
+}
+
 export class SecureAPIClient {
   private static instance: SecureAPIClient;
   private backendUrl: string;
@@ -697,7 +704,10 @@ export class SecureAPIClient {
             throw new Error('Authentication failed - please login again');
           }
 
-          const msg = detail || bodyText || `${response.status} ${response.statusText}`;
+          const msg = (typeof detail === 'string' && detail) || bodyText || `${response.status} ${response.statusText}`;
+          if (response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429) {
+            throw new ClientRequestError(`API request failed: ${msg}`);
+          }
           throw new Error(`API request failed: ${msg}`);
         }
 
@@ -753,7 +763,7 @@ export class SecureAPIClient {
         }
 
         // Don't retry on specific errors
-        if (error instanceof TenantIsolationError) {
+        if (error instanceof TenantIsolationError || error instanceof ClientRequestError) {
           throw error;
         }
 
