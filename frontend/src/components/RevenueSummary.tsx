@@ -4,7 +4,7 @@ import { SecureAPI } from '../lib/secureApi';
 interface RevenueData {
     property_id: string;
     total_revenue: string;
-    currency: string;
+    currency: string | null;
     reservations_count: number;
 }
 
@@ -80,7 +80,7 @@ export const RevenueSummary: React.FC<RevenueSummaryProps> = ({ propertyId = 'pr
                         <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">{month ? `Revenue for ${month}` : 'Total Revenue'}</h2>
                         <div className="flex items-baseline gap-2 mt-1">
                             <span className="text-3xl font-bold text-gray-900 tracking-tight">
-                                {data.currency} {displayTotal}
+                                {data.currency ?? ''} {displayTotal}
                             </span>
                             {/* Fake trend indicator for premium feel */}
                             <span className="inline-flex items-baseline px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 md:mt-2 lg:mt-0">

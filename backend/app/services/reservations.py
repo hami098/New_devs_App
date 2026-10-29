@@ -1,6 +1,10 @@
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Any, List, Optional
 
+class MixedCurrencyError(Exception):
+    pass
+
+
 async def calculate_monthly_revenue(property_id: str, tenant_id: str, month: int, year: int) -> Optional[Dict[str, Any]]:
     """
     Calculates revenue for a specific month in the property's own time zone.
@@ -16,7 +20,9 @@ async def calculate_monthly_revenue(property_id: str, tenant_id: str, month: int
         query = text("""
             SELECT
                 COALESCE(SUM(r.total_amount), 0) AS total_revenue,
-                COUNT(r.id) AS reservation_count
+                COUNT(r.id) AS reservation_count,
+                COUNT(DISTINCT r.currency) AS currency_count,
+                MIN(r.currency) AS currency
             FROM properties p
             LEFT JOIN reservations r
                 ON r.property_id = p.id
@@ -36,13 +42,15 @@ async def calculate_monthly_revenue(property_id: str, tenant_id: str, month: int
         row = result.fetchone()
         if not row:
             return None
+        if row.currency_count > 1:
+            raise MixedCurrencyError(property_id)
 
         total_revenue = Decimal(row.total_revenue).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         return {
             "property_id": property_id,
             "tenant_id": tenant_id,
             "total": str(total_revenue),
-            "currency": "USD",
+            "currency": row.currency,
             "count": row.reservation_count
         }
 
@@ -61,7 +69,9 @@ async def calculate_total_revenue(property_id: str, tenant_id: str) -> Optional[
         query = text("""
             SELECT
                 COALESCE(SUM(r.total_amount), 0) AS total_revenue,
-                COUNT(r.id) AS reservation_count
+                COUNT(r.id) AS reservation_count,
+                COUNT(DISTINCT r.currency) AS currency_count,
+                MIN(r.currency) AS currency
             FROM properties p
             LEFT JOIN reservations r
                 ON r.property_id = p.id
@@ -77,13 +87,15 @@ async def calculate_total_revenue(property_id: str, tenant_id: str) -> Optional[
         row = result.fetchone()
         if not row:
             return None
+        if row.currency_count > 1:
+            raise MixedCurrencyError(property_id)
 
         total_revenue = Decimal(row.total_revenue).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         return {
             "property_id": property_id,
             "tenant_id": tenant_id,
             "total": str(total_revenue),
-            "currency": "USD",
+            "currency": row.currency,
             "count": row.reservation_count
         }
 
