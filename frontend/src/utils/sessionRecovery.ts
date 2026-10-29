@@ -111,6 +111,10 @@ export class SessionRecovery {
       console.log('[SessionRecovery] No session from getSession, checking localStorage directly...');
       
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) {
+        console.log('[SessionRecovery] No recoverable session found');
+        return null;
+      }
       const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
       const storedData = localStorage.getItem(storageKey);
       
@@ -171,6 +175,7 @@ export class SessionRecovery {
   clearStoredSession(): void {
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      if (!supabaseUrl) return;
       const storageKey = `sb-${supabaseUrl.split('//')[1].split('.')[0]}-auth-token`;
       localStorage.removeItem(storageKey);
       console.log('[SessionRecovery] Stored session cleared');
