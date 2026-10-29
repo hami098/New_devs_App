@@ -10,7 +10,7 @@ router = APIRouter()
 async def get_dashboard_summary(
     property_id: str,
     month: Optional[int] = Query(None, ge=1, le=12),
-    year: Optional[int] = Query(None, ge=2000, le=2100),
+    year: Optional[int] = Query(None, ge=1, le=9999),
     current_user: dict = Depends(get_current_user)
 ) -> Dict[str, Any]:
     
